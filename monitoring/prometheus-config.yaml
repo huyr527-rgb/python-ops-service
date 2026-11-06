@@ -10,5 +10,22 @@ data:
     scrape_configs:
       - job_name: python-ops-service
         metrics_path: /metrics
-        static_configs:
-          - targets: ["python-ops-service.ops-demo.svc.cluster.local:8000"]
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names: [ops-demo]
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            action: keep
+            regex: python-ops-service
+          - source_labels: [__meta_kubernetes_pod_phase]
+            action: keep
+            regex: Running
+          - source_labels: [__meta_kubernetes_pod_ip]
+            action: replace
+            regex: (.+)
+            target_label: __address__
+            replacement: $1:8000
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: pod
