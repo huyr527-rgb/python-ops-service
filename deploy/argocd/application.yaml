@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: python-ops-service
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: python-ops-service
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/huyr527-rgb/python-ops-service.git
+    targetRevision: main
+    path: deploy/overlays/cloud
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ops-demo
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m

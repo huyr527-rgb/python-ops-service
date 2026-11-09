@@ -6,3 +6,4 @@ metadata:
 data:
   APP_NAME: python-ops-service
   APP_ENV: kubernetes
+  GUNICORN_WORKERS: "2"

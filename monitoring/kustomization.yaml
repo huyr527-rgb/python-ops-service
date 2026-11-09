@@ -5,8 +5,12 @@ resources:
   - metrics-server-components.yaml
   - prometheus-rbac.yaml
   - prometheus-config.yaml
+  - prometheus-rules.yaml
   - prometheus-deployment.yaml
   - prometheus-service.yaml
+  - alertmanager-config.yaml
+  - alertmanager-deployment.yaml
+  - alertmanager-service.yaml
   - grafana-configmap.yaml
   - grafana-secret.yaml
   - grafana-deployment.yaml

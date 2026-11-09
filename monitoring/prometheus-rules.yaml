@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-rules
+  namespace: ops-demo
+data:
+  application-alerts.yaml: |
+    groups:
+      - name: python-ops-service
+        rules:
+          - alert: ApplicationDown
+            expr: sum(up{job="python-ops-service"}) == 0
+            for: 2m
+            labels:
+              severity: critical
+              service: python-ops-service
+            annotations:
+              summary: Python Ops Service is unavailable
+              description: Prometheus cannot scrape any application Pod for two minutes.
+              runbook: https://github.com/huyr527-rgb/python-ops-service/blob/main/docs/runbook.md#applicationdown
+
+          - alert: PrometheusTargetDown
+            expr: min(up{job="python-ops-service"}) < 1
+            for: 2m
+            labels:
+              severity: warning
+              service: python-ops-service
+            annotations:
+              summary: An application metrics target is down
+              description: At least one application Pod is not being scraped successfully.
+              runbook: https://github.com/huyr527-rgb/python-ops-service/blob/main/docs/runbook.md#prometheustargetdown
+
+          - alert: HighErrorRate
+            expr: |
+              (
+                sum(rate(http_requests_total{job="python-ops-service",status=~"5.."}[5m]))
+                /
+                clamp_min(sum(rate(http_requests_total{job="python-ops-service"}[5m])), 1)
+              ) > 0.05
+            for: 2m
+            labels:
+              severity: warning
+              service: python-ops-service
+            annotations:
+              summary: HTTP error rate is above 5%
+              description: More than 5% of requests returned 5xx responses over the last five minutes.
+              runbook: https://github.com/huyr527-rgb/python-ops-service/blob/main/docs/runbook.md#higherrorrate
+
+          - alert: HighLatency
+            expr: |
+              histogram_quantile(
+                0.95,
+                sum(rate(http_request_duration_seconds_bucket{job="python-ops-service"}[5m])) by (le)
+              ) > 0.5
+            for: 5m
+            labels:
+              severity: warning
+              service: python-ops-service
+            annotations:
+              summary: Application P95 latency is above 500ms
+              description: The 95th percentile handler latency has exceeded 500ms for five minutes.
+              runbook: https://github.com/huyr527-rgb/python-ops-service/blob/main/docs/runbook.md#highlatency

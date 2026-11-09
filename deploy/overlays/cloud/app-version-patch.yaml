@@ -1,0 +1,13 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-ops-service
+  namespace: ops-demo
+spec:
+  template:
+    spec:
+      containers:
+        - name: app
+          env:
+            - name: APP_VERSION
+              value: latest

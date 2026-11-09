@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: python-ops-service-ingress
+  namespace: ops-demo
+spec:
+  podSelector:
+    matchLabels:
+      app: python-ops-service
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ops-demo
+      ports:
+        - protocol: TCP
+          port: 8000
