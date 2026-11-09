@@ -8,6 +8,7 @@ from prometheus_client import CONTENT_TYPE_LATEST, Counter, Gauge, Histogram, ge
 
 
 app = Flask(__name__)
+app.logger.setLevel(os.getenv("LOG_LEVEL", "INFO").upper())
 
 APP_NAME = os.getenv("APP_NAME", "python-ops-service")
 APP_VERSION = os.getenv("APP_VERSION", "dev")
