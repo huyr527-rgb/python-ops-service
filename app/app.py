@@ -1,3 +1,5 @@
+"""HTTP service, health endpoints, and Prometheus instrumentation."""
+
 import json
 import os
 import time
@@ -13,6 +15,7 @@ app.logger.setLevel(os.getenv("LOG_LEVEL", "INFO").upper())
 APP_NAME = os.getenv("APP_NAME", "python-ops-service")
 APP_VERSION = os.getenv("APP_VERSION", "dev")
 APP_ENV = os.getenv("APP_ENV", "local")
+REQUEST_ID_HEADER = "X-Request-ID"
 
 REQUESTS_TOTAL = Counter(
     "http_requests_total",
@@ -32,16 +35,16 @@ APP_INFO.labels(APP_NAME, APP_VERSION, APP_ENV).set(1)
 @app.before_request
 def start_timer() -> None:
     request.start_time = time.perf_counter()
-    request.request_id = request.headers.get("X-Request-ID") or uuid4().hex
+    request.request_id = request.headers.get(REQUEST_ID_HEADER) or uuid4().hex
 
 
 @app.after_request
-def record_request(response):
+def record_request(response: Response) -> Response:
     duration = time.perf_counter() - getattr(request, "start_time", time.perf_counter())
     REQUESTS_TOTAL.labels(request.method, request.path, str(response.status_code)).inc()
     REQUEST_DURATION.labels(request.method, request.path).observe(duration)
     request_id = getattr(request, "request_id", uuid4().hex)
-    response.headers["X-Request-ID"] = request_id
+    response.headers[REQUEST_ID_HEADER] = request_id
     app.logger.info(
         json.dumps(
             {

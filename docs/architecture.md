@@ -9,7 +9,7 @@
                                     |
                     +---------------v----------------+
                     | Flask + Gunicorn application    |
-                    | /healthz /metrics /version      |
+                    | /livez /readyz /metrics /version |
                     +---------------+----------------+
                                     |
                               scrape :8000/metrics
@@ -37,9 +37,6 @@ backend. Prometheus evaluates native alert rules and forwards them to
 Alertmanager. Metrics Server is included for Kubernetes resource inspection with
 `kubectl top`; it is separate from Prometheus and serves the Kubernetes resource
 metrics API.
-Metrics Server is included for Kubernetes resource inspection with
-`kubectl top`; it is separate from Prometheus and serves the Kubernetes
-resource metrics API.
 
 ## Request and release flow
 

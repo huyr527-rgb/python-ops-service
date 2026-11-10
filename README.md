@@ -2,6 +2,8 @@
 
 一个面向云原生运维实践的 Python 服务示例，覆盖应用容器化、Kubernetes 发布和基础可观测性。项目适合用于演示从镜像构建、滚动发布到指标采集和故障排查的完整流程。
 
+README 是项目介绍、使用方式和技术边界的唯一入口；`docs/` 仅保留架构说明和运行手册。
+
 ## 项目亮点
 
 - Flask + Gunicorn 提供轻量 HTTP 服务。
@@ -32,7 +34,7 @@ deploy/                      Argo CD Application 和云端 Kustomize overlay
 scripts/                     发布验证和回滚脚本
 tests/                       自动化测试
 docs/architecture.md        架构和发布流程
-docs/resume-project-entry.md 简历项目描述
+docs/runbook.md             告警处理和回滚手册
 docker-compose.yml           本地一键启动配置
 .env.example                 本地环境变量示例
 ```
@@ -53,6 +55,8 @@ docker compose ps
 | --- | --- |
 | 应用 | <http://localhost:8000> |
 | 健康检查 | <http://localhost:8000/healthz> |
+| 存活检查 | <http://localhost:8000/livez> |
+| 就绪检查 | <http://localhost:8000/readyz> |
 | 指标 | <http://localhost:8000/metrics> |
 | Prometheus | <http://localhost:9090> |
 | Grafana | <http://localhost:3000> |
@@ -117,7 +121,7 @@ kubectl top nodes
 kubectl top pods -n ops-demo
 ```
 
-默认 NodePort：应用 `30080`、Prometheus `30090`、Grafana `30300`。Grafana 示例账号为 `admin/change-me`，生产环境应改为 Secret 管理的强密码。
+默认 NodePort：应用 `30080`、Prometheus `30090`、Grafana `30300`。Grafana 示例账号为 `admin/change-me`，生产环境应改为 Secret 管理的强密码。仓库中的凭据只用于演示，禁止替换为真实密码后提交。
 
 使用 Argo CD 时：
 
@@ -156,15 +160,14 @@ pwsh ./scripts/verify-release.ps1
 pwsh ./scripts/rollback.ps1
 ```
 
-告警处理、故障注入和回滚步骤见 [docs/runbook.md](docs/runbook.md)。
-
-更多设计说明见 [docs/architecture.md](docs/architecture.md)，简历项目描述见 [docs/resume-project-entry.md](docs/resume-project-entry.md)。
+架构和发布流程见 [docs/architecture.md](docs/architecture.md)，告警处理和回滚步骤见 [docs/runbook.md](docs/runbook.md)。
 
 ## 测试
 
 ```bash
 python -m pip install -r requirements-dev.txt
 pytest -q
+ruff check app tests
 python -m compileall -q app
 ```
 

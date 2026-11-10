@@ -31,8 +31,6 @@ spec:
           envFrom:
             - configMapRef:
                 name: python-ops-config
-            - secretRef:
-                name: python-ops-secret
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
