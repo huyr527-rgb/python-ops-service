@@ -10,4 +10,4 @@ spec:
         - name: app
           env:
             - name: APP_VERSION
-              value: a499df90a8a7f4d7b050adbfb02b2b84cc904bc1
+              value: c9833cf52afe4e2bf09194d13980b07f58a71fc0
