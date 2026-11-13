@@ -11,7 +11,7 @@ patches:
 images:
   - name: ghcr.io/huyr527-rgb/python-ops-service
     newName: ghcr.io/huyr527-rgb/python-ops-service
-    newTag: c9833cf52afe4e2bf09194d13980b07f58a71fc0
+    newTag: 088de4bd359d0c9ec4cbe5784af83626ee0d9606
   - name: ghcr.io/huyr527-rgb/python-ops-service-frontend
     newName: ghcr.io/huyr527-rgb/python-ops-service-frontend
-    newTag: c9833cf52afe4e2bf09194d13980b07f58a71fc0
+    newTag: 088de4bd359d0c9ec4cbe5784af83626ee0d9606
