@@ -7,3 +7,5 @@ data:
   APP_NAME: python-ops-service
   APP_ENV: kubernetes
   GUNICORN_WORKERS: "2"
+  PROMETHEUS_URL: http://prometheus:9090
+  ALERTMANAGER_URL: http://alertmanager:9093

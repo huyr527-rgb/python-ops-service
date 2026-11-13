@@ -18,6 +18,7 @@ README 是项目介绍、使用方式和技术边界的唯一入口；`docs/` �
 - HPA、PDB、启动探针、容器安全上下文和 NetworkPolicy 提供发布期间的可靠性边界。
 - GitHub Actions 执行 Ruff、测试、清单渲染、GHCR 镜像构建、Trivy 扫描，并将不可变 SHA 镜像标签提升到 GitOps overlay。
 - `deploy/argocd/application.yaml` 提供 Argo CD 自动同步、自愈、清理和回滚入口。
+- 独立 `frontend/` 提供只读运行监控控制台，通过后端代理读取 Prometheus 和 Alertmanager。
 
 ## 技术栈
 
@@ -27,6 +28,7 @@ README 是项目介绍、使用方式和技术边界的唯一入口；`docs/` �
 
 ```text
 app/                         Python 服务、依赖和 Dockerfile
+frontend/                    React/Vite 运行监控控制台
 k8s/                         应用 Kubernetes 清单
 monitoring/                  Prometheus、Grafana、Metrics Server 清单
 monitoring/compose/          Compose 专用监控配置
@@ -78,6 +80,8 @@ docker compose down
 ```
 
 ## Kubernetes 部署
+
+运行监控控制台由 `python-ops-console` Service 提供，前端只读访问 `/api/overview`、`/api/metrics`、`/api/alerts` 和 `/api/release`。Prometheus 和 Alertmanager 地址只在集群内通过 ConfigMap 注入，浏览器不会直接访问监控服务。演示环境可通过节点地址的 `30100` 端口访问控制台。
 
 ### 1. 使用 GitHub Actions 发布镜像
 
@@ -169,6 +173,12 @@ python -m pip install -r requirements-dev.txt
 pytest -q
 ruff check app tests
 python -m compileall -q app
+
+cd frontend
+npm ci
+npm test
+npm run lint
+npm run build
 ```
 
 GitHub Actions 会在 Pull Request 时执行验证；Push 到 `main` 时继续构建并扫描镜像，再更新 GitOps overlay。

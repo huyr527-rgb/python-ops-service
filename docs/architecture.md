@@ -25,6 +25,11 @@
                     +--------------------------------+
 ```
 
+The read-only React control room is served by Nginx in the same namespace. Its
+`/api/` requests are proxied to the Flask service, which reads Prometheus and
+Alertmanager with short timeouts. Monitoring endpoints are not exposed directly
+to the browser.
+
 The application is packaged as a non-root Python 3.11 container. Docker
 Compose is intended for local development. Kubernetes manifests provide a
 namespace, rolling deployment, service discovery, startup/readiness/liveness

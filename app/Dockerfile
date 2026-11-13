@@ -14,6 +14,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --disable-pip-version-check -r requirements.txt
 
 COPY app.py .
+COPY monitoring_client.py .
 RUN chown -R appuser:appgroup /app
 
 USER 1000:1000

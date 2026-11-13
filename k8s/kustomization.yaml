@@ -5,7 +5,9 @@ resources:
   - namespace.yaml
   - configmap.yaml
   - deployment.yaml
+  - frontend-deployment.yaml
   - service.yaml
+  - frontend-service.yaml
   - hpa.yaml
   - pdb.yaml
   - network-policy.yaml

@@ -7,6 +7,7 @@ on:
 
 env:
   IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/python-ops-service
+  FRONTEND_IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/python-ops-service-frontend
 
 jobs:
   validate:
@@ -55,6 +56,29 @@ jobs:
       - name: Render cloud deployment
         run: kubectl kustomize deploy/overlays/cloud > /tmp/python-ops-service.yaml
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Lint frontend
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Test frontend
+        working-directory: frontend
+        run: npm test
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
   image:
     name: Build, scan, publish, and promote
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -98,9 +122,30 @@ jobs:
           severity: CRITICAL
           exit-code: "1"
 
+      - name: Build and publish frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ${{ env.FRONTEND_IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.FRONTEND_IMAGE_NAME }}:latest
+          provenance: false
+
+      - name: Scan frontend image with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ env.FRONTEND_IMAGE_NAME }}:${{ github.sha }}
+          format: table
+          ignore-unfixed: true
+          severity: CRITICAL
+          exit-code: "1"
+
       - name: Promote image tag in GitOps overlay
         env:
           IMAGE_TAG: ${{ github.sha }}
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+          FRONTEND_IMAGE_NAME: ${{ env.FRONTEND_IMAGE_NAME }}
         shell: bash
         run: |
           python - <<'PY'
@@ -111,7 +156,13 @@ jobs:
           tag = os.environ["IMAGE_TAG"]
           kustomization = Path("deploy/overlays/cloud/kustomization.yaml")
           content = kustomization.read_text(encoding="utf-8")
-          content = re.sub(r"(?m)^(\s*newTag:)\s*.*$", rf"\1 {tag}", content)
+
+          def update_tag(value, image):
+              pattern = rf"(?m)^([ \t]*- name: {re.escape(image)}\r?\n[ \t]+newName:.*\r?\n[ \t]+newTag:)[ \t]*.*$"
+              return re.sub(pattern, rf"\1 {tag}", value)
+
+          content = update_tag(content, os.environ["IMAGE_NAME"])
+          content = update_tag(content, os.environ["FRONTEND_IMAGE_NAME"])
           kustomization.write_text(content, encoding="utf-8")
 
           version_patch = Path("deploy/overlays/cloud/app-version-patch.yaml")
